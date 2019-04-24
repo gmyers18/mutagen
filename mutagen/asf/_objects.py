@@ -269,10 +269,32 @@ class StreamPropertiesObject(BaseObject):
 
     def parse(self, asf, data):
         super(StreamPropertiesObject, self).parse(asf, data)
-        channels, sample_rate, bitrate = struct.unpack("<HII", data[56:66])
-        asf.info.channels = channels
-        asf.info.sample_rate = sample_rate
-        asf.info.bitrate = bitrate * 8
+
+        guid = bytes2guid(struct.unpack("<16s", data[0:16])[0])
+
+        # General reference: http://drang.s4.xrea.com/program/tips/id3tag/wmp/03_asf_top_level_header_object.html#3_3
+
+        # Audio vs. Video GUIDs are from Section 10.4 of
+        # http://drang.s4.xrea.com/program/tips/id3tag/wmp/10_asf_guids.html
+
+        if guid == 'F8699E40-5B4D-11CF-A8FD-00805F5C442B':
+            # Audio media - See Section 9.1 of
+            # http://drang.s4.xrea.com/program/tips/id3tag/wmp/09_standard_asf_media_types.html
+            channels, sample_rate, bitrate = struct.unpack("<HII", data[56:66])
+            asf.info.channels = channels
+            asf.info.sample_rate = sample_rate
+            asf.info.bitrate = bitrate * 8
+        elif guid == 'BC19EFC0-5B4D-11CF-A8FD-00805F5C442B':
+            # Video media - See Section 9.2 of
+            # http://drang.s4.xrea.com/program/tips/id3tag/wmp/09_standard_asf_media_types.html
+            width, height = struct.unpack("<II", data[54:62])
+            bpp, = struct.unpack("<H", data[79:81])
+            compression_id = data[81:85].decode()
+
+            asf.info.width = width
+            asf.info.height = height
+            asf.info.bpp = bpp
+            asf.info.compression_id = compression_id
 
 
 @BaseObject._register

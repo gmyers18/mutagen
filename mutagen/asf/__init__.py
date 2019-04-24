@@ -50,28 +50,41 @@ class ASFInfo(StreamInfo):
     length = 0.0
     sample_rate = 0
     bitrate = 0
-    channels = 0
+    channels = -1
     codec_type = u""
     codec_name = u""
     codec_description = u""
+    width = 0
+    height = 0
+    bpp = 0
+    compression_id = u""
 
     def __init__(self):
         self.length = 0.0
         self.sample_rate = 0
         self.bitrate = 0
-        self.channels = 0
+        self.channels = -1
         self.codec_type = u""
         self.codec_name = u""
         self.codec_description = u""
+        self.width = 0
+        self.height = 0
+        self.bpp = 0
+        self.compression_id = u""
 
     def pprint(self):
         """Returns:
             text: a stream information text summary
         """
 
-        s = u"ASF (%s) %d bps, %s Hz, %d channels, %.2f seconds" % (
-            self.codec_type or self.codec_name or u"???", self.bitrate,
-            self.sample_rate, self.channels, self.length)
+        if self.channels >= 0:
+            s = u"ASF Audio (%s) %d bps, %s Hz, %d channels, %.2f seconds" % (
+                self.codec_type or self.codec_name or u"???", self.bitrate,
+                self.sample_rate, self.channels, self.length)
+        else:
+            s = u"ASF Video (%s/%s), %dx%d, %d bpp" % (
+                self.codec_type or self.codec_name or u"???",
+                self.compression_id, self.width, self.height, self.bpp)
         return s
 
 
